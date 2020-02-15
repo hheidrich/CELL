@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.csgraph import minimum_spanning_tree
+from scipy.sparse.linalg import eigs
 from sklearn.metrics import roc_auc_score, average_precision_score
 import networkx as nx
 
@@ -52,7 +53,7 @@ def train_val_test_split(A, val_share, test_share, seed=123):
     G_train = nx.Graph()
     G_train.add_nodes_from(G)
     G_train.add_edges_from(train_edges)
-    train_graph = nx.to_scipy_sparse_matrix(G_train)
+    train_graph = nx.to_scipy_sparse_matrix(G_train, dtype=np.float)
     
     # Draw non-edges from input graph: draw random tuples, remove direction, loops, and input edges
     non_edges = np.random.choice(num_nodes, size=(2*(num_val+num_test), 2))
@@ -140,27 +141,27 @@ def graph_from_scores(scores_matrix, n_edges):
     target_g (sp.csr.csr_matrix, shape=(N, N)): Adjacency matrix of the generated graph.
     """
 
-    target_g = sp.csr_matrix(scores.shape)
+    target_g = sp.csr_matrix(scores_matrix.shape)
     
-    np.fill_diagonal(scores, 0)
+    np.fill_diagonal(scores_matrix, 0)
     
-    degrees = scores.sum(1)   # The row sum over the scores.
+    degrees = scores_matrix.sum(1)   # The row sum over the scores_matrix.
 
-    N = scores.shape[0]
+    N = scores_matrix.shape[0]
 
     for n in range(N): # Iterate over the nodes
-        target = np.random.choice(N, p=scores[n]/degrees[n])
+        target = np.random.choice(N, p=scores_matrix[n]/degrees[n])
         target_g[n, target] = 1
         target_g[target, n] = 1
 
 
     diff = np.round((2 * n_edges - target_g.sum())/2)
     if diff > 0:
-        triu = np.triu(scores)
+        triu = np.triu(scores_matrix)
         triu[target_g.nonzero()] = 0
         triu = triu / triu.sum()
 
-        triu_ixs = np.triu_indices_from(scores)
+        triu_ixs = np.triu_indices_from(scores_matrix)
         extra_edges = np.random.choice(triu_ixs[0].shape[0], replace=False, p=triu[triu_ixs], size=int(diff))
 
         target_g[(triu_ixs[0][extra_edges], triu_ixs[1][extra_edges])] = 1

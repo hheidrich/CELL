@@ -2,6 +2,7 @@ import abc
 import time
 import numpy as np
 import torch
+from cell import utils
 DEVICE = 'cpu'
 DTYPE = torch.float32
 
@@ -21,6 +22,34 @@ class Callback(abc.ABC):
     @abc.abstractmethod
     def invoke(self, loss, model):
         pass
+
+
+class EdgeOverlapCriterion(Callback):
+    """
+    This callback serves in three ways:
+    - It tracks the EdgeOverlap and stops if the limit is met.
+    - It tracks the validation AUC-ROC score and the average precision.
+    - It tracks the total time.
+    """
+    def __init__(self, invoke_every, EO_limit=1.):
+        super().__init__(invoke_every)
+        self.EO_limit = EO_limit
+
+    def invoke(self, loss, model):
+        start = time.time()
+        model.update_scores_matrix()
+        sampled_graph = model.sample_graph()
+        overlap = utils.edge_overlap(model.A_sparse, sampled_graph) / model.num_edges
+        overlap_time = time.time() - start
+        model.total_time += overlap_time
+        
+        step_str = f'{model.step:{model.step_str_len}d}'
+        print(f'Step: {step_str}/{model.steps}',
+              f'Loss: {loss:.5f}',
+              f'Edge-Overlap: {overlap:.3f}',
+              f'Total-Time: {int(model.total_time)}')
+        if overlap >= self.EO_limit:
+            self.stop_training()
 
 
 class LinkPredictionCriterion(Callback):
@@ -49,7 +78,7 @@ class LinkPredictionCriterion(Callback):
         print(f'Step: {step_str}/{model.steps}',
               f'Loss: {loss:.5f}',
               f'ROC-AUC Score: {roc_auc:.3f}',
-              f'Average Precision: {avg_prec:.3f}'
+              f'Average Precision: {avg_prec:.3f}',
               f'Total-Time: {int(model.total_time)}')
         link_pred_score = roc_auc + avg_prec
         
@@ -65,33 +94,6 @@ class LinkPredictionCriterion(Callback):
             self.patience += 1
             
         model._scores_matrix = self.best_scores_matrix
-
-class EdgeOverlapCriterion(Callback):
-    """
-    This callback serves in three ways:
-    - It tracks the EdgeOverlap and stops if the limit is met.
-    - It tracks the validation AUC-ROC score and the average precision.
-    - It tracks the total time.
-    """
-    def __init__(self, invoke_every, EO_limit=1.):
-        super().__init__(invoke_every)
-        self.EO_limit = EO_limit
-
-    def invoke(self, loss, model):
-        start = time.time()
-        model.update_scores_matrix()
-        sampled_graph = model.sample_graph()
-        overlap = utils.edge_overlap(model.A_sparse, sampled_graph) / model.num_edges
-        overlap_time = time.time() - start
-        model.total_time += overlap_time
-        
-        step_str = f'{model.step:{model.step_str_len}d}'
-        print(f'Step: {step_str}/{model.steps}',
-              f'Loss: {loss:.5f}',
-              f'Edge-Overlap: {overlap:.3f}',
-              f'Total-Time: {int(model.total_time)}')
-        if overlap >= self.EO_limit:
-            self.stop_training()
 
 
 class Cell(object):
