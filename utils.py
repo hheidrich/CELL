@@ -7,6 +7,26 @@ import networkx as nx
 
 
 def train_val_test_split(A, val_share, test_share, seed=123):
+    """
+    Split the edges of the input graph in training-, validation-, and test set.
+    
+    Randomly split a share of the edges of the input graph for validation- and test set, while ensuring that the 
+    remaining graph stays connected. Additionally choose an equal amount of non-edges from the input graph.
+
+    Args:
+        A (sp.csr.csr_matrix): The input adjacency matrix.
+        val_share: Fraction of edges that form the validation set.
+        test_share: Fraction of edges that form the test set.
+        seed: Random seed.
+        
+    Returns:
+        train_graph (sp.csr.csr_matrix): Remaining graph after split, which is used for training.
+        val_ones (np.array): Validation edges. Rows represent indices of the input adjacency matrix with value 1. 
+        val_zeros (np.array): Validation non-edges. Rows represent indices of the input adjacency matrix with value 0.
+        test_ones (np.array): Test edges. Rows represent indices of the input adjacency matrix with value 1. 
+        test_zeros (np.array): Test non-edges. Rows represent indices of the input adjacency matrix with value 0.
+    """  
+    
     np.random.seed(seed)
     G = nx.from_scipy_sparse_matrix(A)
     num_nodes = G.number_of_nodes()
@@ -48,41 +68,33 @@ def train_val_test_split(A, val_share, test_share, seed=123):
 
 def edge_overlap(A, B):
     """
-    Compute edge overlap between input graphs A and B, i.e. how many edges in A are also present in graph B. Assumes
-    that both graphs contain the same number of edges.
+    Compute edge overlap between two graphs (amount of shared edges).
 
-    Parameters
-    ----------
-    A: sparse matrix or np.array of shape (N,N).
-       First input adjacency matrix.
-    B: sparse matrix or np.array of shape (N,N).
-       Second input adjacency matrix.
+    Args:
+        A (sp.csr.csr_matrix): First input adjacency matrix.
+        B (sp.csr.csr_matrix): Second input adjacency matrix.
 
-    Returns
-    -------
-    float, the edge overlap.
+    Returns:
+        Edge overlap.
     """
+    
     return A.multiply(B).sum() / 2
     
     
 def link_prediction_performance(scores_matrix, val_ones, val_zeros):
+    """
+    Compute the link prediction performance of a score matrix on a set of validation edges and non-edges.
+
+    Args:
+        scores_matrix (np.array): Symmetric scores matrix of the graph generative model.
+        val_ones (np.array): Validation edges. Rows represent indices of the input adjacency matrix with value 1. 
+        val_zeros (np.array): Validation non-edges. Rows represent indices of the input adjacency matrix with value 0.
+        
+    Returns:
+       2-Tuple containg ROC-AUC score and Average precision.
+    """
+    
     actual_labels_val = np.append(np.ones(len(val_ones)), np.zeros(len(val_zeros)))
     edge_scores = np.append(scores_matrix[val_ones[:,0], val_ones[:,1]],
                             scores_matrix[val_zeros[:,0], val_zeros[:,1]])
     return roc_auc_score(actual_labels_val, edge_scores), average_precision_score(actual_labels_val, edge_scores)
-
-
-def argmax_with_patience(x, max_patience):
-    max_val = 0.
-    patience = max_patience
-    for i in range(len(x)):
-        if x[i] > max_val:
-            max_val = x[i]
-            argmax = i
-            patience = max_patience
-        else:
-            patience -= 1
-       
-        if patience == 0:
-            break
-    return argmax
