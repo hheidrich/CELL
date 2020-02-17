@@ -1,8 +1,9 @@
+"""Graph statistics are implemented here."""
+
 import numpy as np
 import scipy.sparse as sp
 import networkx as nx
 import powerlaw
-
 
 
 def max_degree(A):
@@ -14,8 +15,7 @@ def max_degree(A):
     
     Returns:
         Maximum degree.
-    """   
-    
+    """
     degrees = A.sum(axis=-1)
     return np.max(degrees)
 
@@ -29,8 +29,7 @@ def min_degree(A):
     
     Returns:
         Minimum degree.
-    """    
-    
+    """
     degrees = A.sum(axis=-1)
     return np.min(degrees)
 
@@ -44,8 +43,7 @@ def average_degree(A):
     
     Returns:
         Average degree.
-    """    
-    
+    """
     degrees = A.sum(axis=-1)
     return np.mean(degrees)
 
@@ -60,7 +58,6 @@ def LCC(A):
     Returns:
         Size of the largest connected component.
     """
-    
     G = nx.from_scipy_sparse_matrix(A)
     return max([len(c) for c in nx.connected_components(G)])
 
@@ -74,10 +71,9 @@ def wedge_count(A):
     
     Returns:
         Wedge count.
-    """    
-
+    """
     degrees = np.array(A.sum(axis=-1))
-    return 0.5 * np.dot(degrees.T, degrees-1).reshape([])
+    return 0.5 * np.dot(degrees.T, degrees - 1).reshape([])
 
 
 def claw_count(A):
@@ -89,10 +85,9 @@ def claw_count(A):
     
     Returns:
         Claw count.
-    """    
-
+    """
     degrees = np.array(A.sum(axis=-1))
-    return 1/6 * np.sum(degrees * (degrees-1) * (degrees-2))
+    return 1 / 6 * np.sum(degrees * (degrees - 1) * (degrees - 2))
 
 
 def triangle_count(A):
@@ -104,8 +99,7 @@ def triangle_count(A):
     
     Returns:
         Triangle count.
-    """    
-
+    """
     A_graph = nx.from_scipy_sparse_matrix(A)
     triangles = nx.triangles(A_graph)
     t = np.sum(list(triangles.values())) / 3
@@ -121,12 +115,13 @@ def square_count(A):
     
     Returns:
         Square count.
-    """    
-
+    """
     A_squared = A @ A
     common_neighbors = sp.triu(A_squared, k=1).tocsr()
-    num_common_neighbors = np.array(common_neighbors[common_neighbors.nonzero()]).reshape(-1)
-    return np.dot(num_common_neighbors, num_common_neighbors-1) / 4
+    num_common_neighbors = np.array(
+        common_neighbors[common_neighbors.nonzero()]
+    ).reshape(-1)
+    return np.dot(num_common_neighbors, num_common_neighbors - 1) / 4
 
 
 def power_law_alpha(A):
@@ -138,10 +133,11 @@ def power_law_alpha(A):
     
     Returns:
         Power law coefficient.
-    """     
-    
+    """
     degrees = np.array(A.sum(axis=-1)).flatten()
-    return powerlaw.Fit(degrees, xmin=max(np.min(degrees),1), verbose=False).power_law.alpha
+    return powerlaw.Fit(
+        degrees, xmin=max(np.min(degrees), 1), verbose=False
+    ).power_law.alpha
 
 
 def gini(A):
@@ -153,11 +149,13 @@ def gini(A):
     
     Returns:
         Gini coefficient.
-    """        
-    
+    """
     N = A.shape[0]
     degrees_sorted = np.sort(np.array(A.sum(axis=-1)).flatten())
-    return 2 * np.dot(degrees_sorted, np.arange(1, N+1)) / (N * np.sum(degrees_sorted)) - (N+1) / N
+    return (
+        2 * np.dot(degrees_sorted, np.arange(1, N + 1)) / (N * np.sum(degrees_sorted))
+        - (N + 1) / N
+    )
 
 
 def edge_distribution_entropy(A):
@@ -169,8 +167,7 @@ def edge_distribution_entropy(A):
     
     Returns:
         Relative edge distribution entropy.
-    """        
-    
+    """
     N = A.shape[0]
     degrees = np.array(A.sum(axis=-1)).flatten()
     degrees /= degrees.sum()
@@ -186,8 +183,7 @@ def assortativity(A):
     
     Returns:
         Assortativity.
-    """      
-    
+    """
     G = nx.from_scipy_sparse_matrix(A)
     return nx.degree_assortativity_coefficient(G)
 
@@ -201,8 +197,7 @@ def clustering_coefficient(A):
     
     Returns:
         Clustering coefficient.
-    """     
-    
+    """
     return 3 * triangle_count(A) / claw_count(A)
 
 
@@ -215,8 +210,7 @@ def cpl(A):
     
     Returns:
         Characteristic path length.
-    """     
-    
+    """
     P = sp.csgraph.shortest_path(A)
     return P[((1 - np.isinf(P)) * (1 - np.eye(P.shape[0]))).astype(np.bool)].mean()
 
@@ -243,21 +237,20 @@ def compute_graph_statistics(A):
                  * Clustering coefficient
                  * Characteristic path length
     """
-    
     statistics = {}
 
-    statistics['d_max'] = max_degree(A)
-    statistics['d_min'] = min_degree(A)
-    statistics['d'] = average_degree(A)
-    statistics['LCC'] = LCC(A)
-    statistics['wedge_count'] = wedge_count(A)
-    statistics['claw_count'] = claw_count(A)
-    statistics['triangle_count'] = triangle_count(A)
-    statistics['square_count'] = square_count(A)
-    statistics['power_law_exp'] = power_law_alpha(A)
-    statistics['gini'] = gini(A)
-    statistics['rel_edge_distr_entropy'] = edge_distribution_entropy(A)
-    statistics['assortativity'] = assortativity(A)
-    statistics['clustering_coefficient'] = clustering_coefficient(A)
-    statistics['cpl'] = cpl(A)
+    statistics["d_max"] = max_degree(A)
+    statistics["d_min"] = min_degree(A)
+    statistics["d"] = average_degree(A)
+    statistics["LCC"] = LCC(A)
+    statistics["wedge_count"] = wedge_count(A)
+    statistics["claw_count"] = claw_count(A)
+    statistics["triangle_count"] = triangle_count(A)
+    statistics["square_count"] = square_count(A)
+    statistics["power_law_exp"] = power_law_alpha(A)
+    statistics["gini"] = gini(A)
+    statistics["rel_edge_distr_entropy"] = edge_distribution_entropy(A)
+    statistics["assortativity"] = assortativity(A)
+    statistics["clustering_coefficient"] = clustering_coefficient(A)
+    statistics["cpl"] = cpl(A)
     return statistics
