@@ -140,10 +140,12 @@ class LinkPredictionCriterion(Callback):
 
 
 class Cell(object):
-    """Implements the Cross Entropy Low-rank Logits graph generative model.
+    """Implements the Cross Entropy Low-rank Logits graph generative model as described our paper.
     
-        We approximate the random walk transition matrix of the target graph A.
-    
+        We approximate the random walk transition matrix of the target graph A over all transition matrices that
+        can be expressed by low-rank logits. Approximation is done with respect to the cross-entropy loss. Next, 
+        the transition matrix is converted to an edge-independent model, from which the generated graphs are sampled.
+        
     Attributes:
         A(torch.tensor): The adjaceny matrix representing the target graph.
         A_sparse(sp.csr.csr_matrix): The sparse representation of A.
