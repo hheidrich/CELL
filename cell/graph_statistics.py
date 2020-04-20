@@ -198,7 +198,7 @@ def clustering_coefficient(A):
     Returns:
         Clustering coefficient.
     """
-    return 3 * triangle_count(A) / claw_count(A)
+    return 3 * triangle_count(A) / wedge_count(A)
 
 
 def cpl(A):
