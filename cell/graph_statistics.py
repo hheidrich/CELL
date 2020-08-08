@@ -237,20 +237,18 @@ def compute_graph_statistics(A):
                  * Clustering coefficient
                  * Characteristic path length
     """
-    statistics = {}
-
-    statistics["d_max"] = max_degree(A)
-    statistics["d_min"] = min_degree(A)
-    statistics["d"] = average_degree(A)
-    statistics["LCC"] = LCC(A)
-    statistics["wedge_count"] = wedge_count(A)
-    statistics["claw_count"] = claw_count(A)
-    statistics["triangle_count"] = triangle_count(A)
-    statistics["square_count"] = square_count(A)
-    statistics["power_law_exp"] = power_law_alpha(A)
-    statistics["gini"] = gini(A)
-    statistics["rel_edge_distr_entropy"] = edge_distribution_entropy(A)
-    statistics["assortativity"] = assortativity(A)
-    statistics["clustering_coefficient"] = clustering_coefficient(A)
-    statistics["cpl"] = cpl(A)
+    statistics = {"d_max": max_degree(A),
+                  "d_min": min_degree(A),
+                  "d": average_degree(A),
+                  "LCC": LCC(A),
+                  "wedge_count": wedge_count(A),
+                  "claw_count": claw_count(A),
+                  "triangle_count": triangle_count(A),
+                  "square_count": square_count(A),
+                  "power_law_exp": power_law_alpha(A),
+                  "gini": gini(A),
+                  "rel_edge_distr_entropy": edge_distribution_entropy(A),
+                  "assortativity": assortativity(A),
+                  "clustering_coefficient": clustering_coefficient(A),
+                  "cpl": cpl(A)}
     return statistics

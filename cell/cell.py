@@ -181,7 +181,7 @@ class Cell(object):
             .requires_grad_()
         )
 
-        if loss_fn:
+        if loss_fn is not None:
             self.loss_fn = loss_fn
         else:
             self.loss_fn = self.built_in_loss_fn
