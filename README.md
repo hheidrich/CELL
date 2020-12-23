@@ -1,5 +1,24 @@
 # CELL
 This is the official repository of the ICML 2020 paper "NetGAN without GAN: From Random Walks to Low-Rank Approximations".
+
+## Installation
+
+The latest code can be installed directly from GitHub with:
+
+```shell
+$ pip install git+https://github.com/hheidrich/CELL.git
+```
+
+The code can be installed in development mode with:
+
+```shell
+$ git clone https://github.com/hheidrich/CELL.git
+$ cd CELL
+$ pip install -e .
+```
+
+Where `-e` means "editable" mode.
+
 ## Citation
 TBA
 ## Requirements
