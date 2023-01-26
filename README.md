@@ -20,7 +20,18 @@ $ pip install -e .
 Where `-e` means "editable" mode.
 
 ## Citation
-TBA
+
+@InProceedings{pmlr-v119-rendsburg20a,
+  title = 	 {{N}et{GAN} without {GAN}: From Random Walks to Low-Rank Approximations},
+  author =       {Rendsburg, Luca and Heidrich, Holger and Luxburg, Ulrike Von},
+  booktitle = 	 {Proceedings of the 37th International Conference on Machine Learning},
+  pages = 	 {8073--8082},
+  year = 	 {2020},
+  volume = 	 {119},
+  series = 	 {Proceedings of Machine Learning Research},
+  publisher =    {PMLR}
+}
+
 ## Requirements
 TBA
 ## Usage
