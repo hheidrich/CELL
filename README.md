@@ -32,10 +32,6 @@ Where `-e` means "editable" mode.
   publisher =    {PMLR}
 }
 
-## Requirements
-TBA
-## Usage
-TBA
 ## References
 ### Cora dataset
 Under `data/CORA-ML.npz` you can find the Cora-ML dataset. The raw data was originally published by   
